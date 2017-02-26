@@ -1,0 +1,21 @@
+Darkroom Timer
+
+A very simple but useful timer for enlarger.
+
+It's Arduino-based, and it consists of a 7 Segment Display (I2C), an Encoder,
+a switch and a relay.
+
+Note: I use a *RED* 7 Segment Display (you don't need light when you print your
+photos :))
+
+When powered, you can change the time with the encoder (MM:SS).
+When click on the encoder (switch) the timer starts.
+It turns on the enlarger (via the relay) and on the display it's counting down
+time left.
+The second switch it turns on the enlarger manually (for focusing). 
+It's better to use a on/off switch.
+
+When the encoder is long-pressed, the time is saved on EEPROM, so it can be 
+used next time as default.
+
+Antonis - maglaras@gmail.com
