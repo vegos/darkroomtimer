@@ -1,5 +1,5 @@
 //
-//  Darkroom Timer v2
+//  Darkroom Timer v2.5
 //  (c)2016, Antonis Maglaras
 //
 //  Parts:
@@ -8,12 +8,22 @@
 //  Schematic/How to:
 //  Sometime in the near future (or not?)
 //
+//  More information:
+//  http://www.facebook.com/darkroomtimer/
+//
+//  Libraries used:
+//  https://github.com/0xPIT/encoder
+//  https://github.com/avishorp/TM1637
+//  https://github.com/PaulStoffregen/TimerOne
+//
 
 #include <Arduino.h>
 #include <TM1637Display.h>
 #include <ClickEncoder.h>
 #include <TimerOne.h>
 #include <EEPROM.h>
+
+uint8_t col;
 
 const uint8_t SEG_DONE[] = {
 	SEG_B | SEG_C | SEG_D | SEG_E | SEG_G,           // d
@@ -104,8 +114,8 @@ void setup()
   display.setBrightness(0x0f);
   display.setSegments(SEG_RDY);
   delay(1000);
-  value = ReadFromMem(0);
-  display.setColon(false);
+  value = ReadFromMem(0); 
+//  display.setColon(false);
   encoder = new ClickEncoder(APin,BPin,SWPin,2);
   encoder->setAccelerationEnabled(ReadFromMem(2));
   Timer1.initialize(1000);
@@ -164,28 +174,26 @@ void Relay(boolean mode)
 
 void StayOn()
 {
-  while (digitalRead(SW2Pin) == LOW) { delay(1); }
+  delay(250);
   Relay(true);
   display.setSegments(SEG_HOLD);
-  delay(250);
-  while (digitalRead(SW2Pin)==HIGH) {delay(1); }
+  while (digitalRead(SW2Pin)==LOW) {delay(1); }
+  Relay(false);
   display.setSegments(SEG_DONE);
-  delay(3000);
+  delay(3000);  
   ShowTimer(value, true);
 }
 
 void ShowTimer(int timetoshow, bool colon)
 {
   if (colon)
-  {
     if (timetoshow>59)
-      display.setColon(true);
+      col=0x80>>1;
     else
-      display.setColon(false);
-  }
+      col=0;
   int minutes=timetoshow / 60;
-  int seconds = timetoshow % 60;
-  display.showNumberDec((minutes*100)+seconds);
+  int seconds = timetoshow % 60;  
+  display.showNumberDecEx((minutes*100)+seconds,col);
 }
 
 void StartTimer(long tmptime)
@@ -215,12 +223,15 @@ void StartTimer(long tmptime)
       if ((millis()-tmpmillis)>499)
       {
         tmpmillis=millis();
-        tick = !tick;      
-        display.setColon(tick);
+        tick = !tick;
+        if (tick)
+          col= 0x80 >> 1;
+        else
+          col=0;
       }
     }
     else
-      display.setColon(false);    
+      col=0;
   }
   Relay(false);
 #ifdef DEBUG  
